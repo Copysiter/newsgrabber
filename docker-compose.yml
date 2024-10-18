@@ -1,0 +1,64 @@
+version: '3.11'
+services:
+  bot:
+    build:
+      context: ./bot
+      dockerfile: Dockerfile
+    container_name: news_bot
+    environment:
+      - API_URL=http://api:8000
+      - BOT_TOKEN=5809025995:AAGurQ4i-Y8OdParI5xDjGaxCe3ghfOFAl
+    depends_on:
+      - api
+    # networks:
+    #   - app-network
+
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: news_api
+    env_file:
+      - ./.env
+    depends_on:
+      - db
+      - scrapyd
+    # networks:
+    #   - app-network
+    ports:
+      - 8000:8000
+
+  scrapyd:
+    build:
+      context: ./scrapy
+      dockerfile: Dockerfile
+    container_name: news_scrapy
+    # network_mode: 'host'
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/newsdb
+    # networks:
+    #   - app-network
+    ports:
+      - '6800:6800'
+
+  db:
+    image: postgres:12
+    container_name: news_db
+    environment:
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: newsdb
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    # networks:
+    #   - app-network
+    ports:
+      - 5432:5432
+
+# networks:
+#   app-network:
+#     driver: bridge
+
+volumes:
+  postgres_data:

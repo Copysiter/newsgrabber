@@ -1,0 +1,4 @@
+scrapy==2.11.2
+scrapyd==1.5.0
+bs4==0.0.2
+telegraph==2.2.0
