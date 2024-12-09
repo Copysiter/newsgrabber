@@ -81,9 +81,20 @@ class Settings(BaseSettings):
         'admin', env='FIRST_SUPERUSER_PASSWORD'
     )
 
+    TELEGRAPH_TOKEN: Union[str, None] = Field(None, env='TELEGRAPH_TOKEN')
+    SPIDER_PROXY_URL: Union[str, None] = Field(None, env='SPIDER_PROXY_URL')
+    TRANSLATE_PROXY_URL: Union[str, None] = Field(None, env='TRANSLATE_PROXY_URL')
+    OPENAI_PROXY_URL: Union[str, None] = Field(None, env='OPENAI_PROXY_URL')
+    OPENAI_API_KEY: Union[str, None] = Field(None, env='OPENAI_API_KEY')
+    OPENAI_MODEL: Union[str, None] = Field(None, env='OPENAI_MODEL')
+    OPENAI_MAX_TOKENS: Union[int, None] = Field(None, env='OPENAI_MAX_TOKENS')
+    OPENAI_TEMPERATURE: Union[float, None] = Field(None, env='OPENAI_TEMPERATURE')
+    OPENAI_PROMPT: Union[str, None] = Field(None, env='OPENAI_PROMPT')
+
     class Config:
         env_file = '.env'
         env_file_encoding = 'utf-8'
+        extra = 'ignore'
 
 
 settings = Settings()

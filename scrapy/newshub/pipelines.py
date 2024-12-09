@@ -7,6 +7,11 @@
 # useful for handling different item types with a single interface
 from itemadapter import ItemAdapter
 
+import lxml.html
+import requests
+import aiohttp
+
+from deep_translator import GoogleTranslator
 from telegraph import Telegraph
 
 from sqlalchemy.orm import sessionmaker
@@ -17,12 +22,77 @@ from scrapy.exceptions import DropItem
 from .models import Item, create_tables
 
 
-class TelegraphPipeline:
+class TranslationPipeline:
     def __init__(self):
-        self.telegraph = Telegraph(
-            '8af84c97c56d3994a35618dee4d5a20c51a395a6b16dfa885d5e5fed936b'
-        )
-        # self.telegraph.create_account(short_name='ScrapyNews')
+        # Инициализируем переводчик один раз при создании объекта
+        self.translator = GoogleTranslator(source='auto', target='ru')
+
+    def process_item(self, item, spider):
+        # Предполагаем, что HTML-контент статьи хранится в item['text']
+        html_content = item['text']
+
+        # Парсим HTML-контент
+        doc = lxml.html.fromstring(html_content)
+
+        # Рекурсивная функция для перевода текстовых узлов
+        def translate_element(element):
+            # Переводим текст внутри тега
+            if element.text and element.text.strip():
+                translated_text = self.translator.translate(element.text)
+                element.text = translated_text
+
+            # Рекурсивно обрабатываем дочерние элементы
+            for child in element:
+                translate_element(child)
+                # Переводим текст после дочернего тега (tail)
+                if child.tail and child.tail.strip():
+                    translated_tail = self.translator.translate(child.tail)
+                    child.tail = translated_tail
+
+        # Запускаем перевод начиная с корневого элемента
+        translate_element(doc)
+
+        # Преобразуем обратно в строку HTML
+        translated_html = lxml.html.tostring(doc, encoding='unicode')
+
+        # Сохраняем переведённый HTML обратно в item
+        item['text'] = translated_html
+
+        return item
+
+
+class WebhookPipeline:
+    def __init__(self):
+        # Инициализация Telegraph клиента
+        self.webhook_url = 'http://api:8000/api/v1/scrapyd/webhook/'
+
+    async def process_item(self, item, spider):
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(
+                        f'{self.webhook_url}{item["id"]}') as response:
+                    if response.status == 200:
+                        pass
+            # response = requests.get(f'{self.webhook_url}{item["id"]}')
+            # if response.status_code == 200:
+            #     pass
+        except Exception as e:
+            spider.logger.error(f"Webhook Error: {e}")
+        return item
+
+
+class TelegraphPipeline:
+    def __init__(self, telegraph_token):
+        # Инициализация Telegraph клиента
+        self.telegraph = Telegraph(telegraph_token)
+
+    @classmethod
+    def from_crawler(cls, crawler):
+        # Получаем Telegraph токен из настроек Scrapy (settings.py)
+        telegraph_token = crawler.settings.get('TELEGRAPH_TOKEN')
+        # Инициализация Telegraph клиента
+        return cls(telegraph_token)
+
 
     def process_item(self, item, spider):
         try:
@@ -35,12 +105,12 @@ class TelegraphPipeline:
             )
             item['telegraph_url'] = 'https://telegra.ph/' + response['path']
             spider.logger.info(
-                f"Успешная публикации статьи в Telegraph: "
+                f"Publish Telegraph successful: "
                 f"{item['telegraph_url']}"
             )
         except Exception as e:
-            spider.logger.error(f"Ошибка при публикации в Telegraph: {e}")
-            raise DropItem(f"Не удалось опубликовать статью: {item['title']}")
+            spider.logger.error(f"Error publish to Telegraph: {e}")
+            raise DropItem(f"Error publish to Telegraph: {item['title']}")
         return item
 
 
@@ -79,6 +149,8 @@ class DatabasePipeline:
         db_item = self.session.query(Item).filter_by(url=url).first()
 
         if db_item:
+            item['id'] = db_item.id
+
             # Обновление существующей записи
             db_item.job_id = item.get('job_id')
             db_item.title = item.get('title')
@@ -91,29 +163,7 @@ class DatabasePipeline:
             self.session.add(db_item)
             self.session.commit()  # Сохраняем изменения в базе данных
         else:
-            # Если элемент не найден, можно добавить логику для обработки, например, логировать
+            # Если элемент не найден, можно добавить логику для обработки
             spider.logger.warning(
                 f"Item with url \'{url}\' not found in the database.")
-
-        '''
-        # Создаем объект статьи из item
-        article = Item(
-            url=item['url'],
-            job_id=item['job_id'],
-            title=item['title'],
-            text=item['text'],
-            html=item['html'],
-            tags=item.get('tags'),
-            telegraph_url=item.get('telegraph_url'),
-        )
-
-        # Добавляем и сохраняем объект в базе данных
-        try:
-            self.session.add(article)
-            self.session.commit()
-        except Exception as e:
-            spider.logger.error(f"Ошибка при сохранении в БД: {e}")
-            self.session.rollback()
-            raise DropItem(f"Не удалось сохранить статью: {item['title']}")
-        '''
         return item

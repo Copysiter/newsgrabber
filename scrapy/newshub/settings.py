@@ -12,10 +12,24 @@ from dotenv import load_dotenv
 
 
 load_dotenv(dotenv_path=os.path.join(
-    os.path.dirname(os.path.dirname(os.path.dirname(__file__))), ".env"
+    os.path.dirname(os.path.dirname(__file__)), ".env"
 ))
 
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgresql:postgresql@localhost:5432/newsdb")
+DATABASE_URL = os.getenv(
+    "DATABASE_URL",
+    "postgresql://postgres:postgres@0.0.0.0:5432/newsdb"
+)
+
+TELEGRAPH_TOKEN = os.getenv("TELEGRAPH_TOKEN")
+
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+OPENAI_PROXY_URL = os.getenv("OPENAI_PROXY_URL")
+OPENAI_PROXY_URL = os.getenv("OPENAI_PROXY_URL")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+OPENAI_MODEL = os.getenv("OPENAI_MODEL")
+OPENAI_MAX_TOKENS = os.getenv("OPENAI_MAX_TOKENS")
+OPENAI_MAX_TOKENS = os.getenv("OPENAI_TEMPERATURE")
+OPENAI_PROMPT = os.getenv("OPENAI_PROMPT")
 
 BOT_NAME = "newshub"
 
@@ -73,8 +87,9 @@ DEFAULT_REQUEST_HEADERS = {
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
    #"newshub.pipelines.NewshubPipeline": 300,
-   "newshub.pipelines.DatabasePipeline": 500,
-   "newshub.pipelines.TelegraphPipeline": 300
+    "newshub.pipelines.WebhookPipeline": 700,
+    "newshub.pipelines.DatabasePipeline": 500,
+    "newshub.pipelines.TelegraphPipeline": 300
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)

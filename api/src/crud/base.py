@@ -99,17 +99,19 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         return order_list
 
     async def get_rows(
-        self, db: AsyncSession, *, skip=0, limit=100,
-        filters: list = None, orders: list = None
+            self, db: AsyncSession, *, skip=0, limit=100,
+            filters: list = None, orders: list = None
     ) -> List[ModelType]:
         filter_list = self.get_filters(filters) if filters else []
         order_list = self.get_orders(orders) if orders else []
         statement = (select(self.model).
                      where(*filter_list).
                      order_by(*order_list).
-                     offset(skip).limit(limit))
+                     offset(skip))
+        if limit:
+            statement = statement.limit(limit)
         results = await db.execute(statement=statement)
-        return results.scalars().all()
+        return results.unique().scalars().all()
 
     async def get_count(
         self, db: AsyncSession, *, filters: dict = None
@@ -124,6 +126,15 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         statement = select(self.model).where(self.model.id == id)
         result = await db.execute(statement=statement)
         return result.scalar_one_or_none()
+
+    async def get_by(
+        self, db: AsyncSession, **kwargs: Dict[str, Any]
+    ) -> Optional[ModelType]:
+        statement = select(self.model)
+        for attr, val in kwargs.items():
+            statement = statement.where(getattr(self.model, attr) == val)
+        results = await db.execute(statement=statement)
+        return results.unique().scalar_one_or_none()
 
     async def create(
         self, db: AsyncSession, *, obj_in: CreateSchemaType

@@ -18,8 +18,11 @@ services:
       context: ./api
       dockerfile: Dockerfile
     container_name: news_api
-    env_file:
-      - ./.env
+    volumes:
+      - ./api/src/:/app/
+      - .env:/app/.env
+    # env_file:
+    # - ./.env
     depends_on:
       - db
       - scrapyd
@@ -33,9 +36,14 @@ services:
       context: ./scrapy
       dockerfile: Dockerfile
     container_name: news_scrapy
+    volumes:
+      - ./scrapy/logs/:/app/logs
+      - .env:/app/.env
+    depends_on:
+      - db
     # network_mode: 'host'
-    environment:
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/newsdb
+    # env_file:
+    # - ./.env
     # networks:
     #   - app-network
     ports:

@@ -2,5 +2,6 @@ from pydantic import BaseModel
 
 
 class ScrapydRequest(BaseModel):
-    url: str
+    source_name: str
+    source_url: str
     spider_name: str

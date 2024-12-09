@@ -12,6 +12,9 @@ class NewshubItem(scrapy.Item):
     pass
 
 class NewsItem(scrapy.Item):
+    # ID статьи
+    id = scrapy.Field()
+
     # URL статьи
     url = scrapy.Field()
 

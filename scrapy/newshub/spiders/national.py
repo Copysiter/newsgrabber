@@ -1,24 +1,49 @@
 import re
 import json
 
-from scrapy import Spider
+from fake_useragent import UserAgent
+
+from scrapy import Spider, Request
 from scrapy.crawler import CrawlerProcess
-from telegraph import Telegraph
 
 from ..items import NewsItem
 from ..utils.html_cleaner import clean_html
+
+from ..settings import OPENAI_MAX_TOKENS
 
 
 class NationalSpider(Spider):
     name = "national_spider"
     allowed_domains = ["thenationalnews.com"]
-    # start_urls = [
-    #     'https://www.thenationalnews.com/business/economy/2024/09/12/hong-kong-in-talks-with-uae-and-saudi-sovereign-wealth-funds-for-asia-investments/'
-    # ]
+    ua = UserAgent()
 
     def __init__(self, url: str = None, *args, **kwargs):
         super(NationalSpider, self).__init__(*args, **kwargs)
         self.start_urls = [url] if url else []
+
+    def start_requests(self):
+        for url in self.start_urls:
+            yield Request(
+                url=url,
+                # meta={'proxy': 'http://tcytqdjj:gs1dm8etd6yo@94.154.170.243:6165'},
+                headers={
+                    'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9;v=b3;q=0.7',
+                    'accept-language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7',
+                    'cache-control': 'no-cache',
+                    'pragma': 'no-cache',
+                    'priority': 'u=0, i',
+                    # 'sec-ch-ua': '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
+                    # 'sec-ch-ua-mobile': '?0',
+                    # 'sec-ch-ua-platform': '"macOS"',
+                    # 'sec-fetch-dest': 'document',
+                    # 'sec-fetch-mode': 'navigate',
+                    # 'sec-fetch-site': 'same-origin',
+                    # 'sec-fetch-user': '?1',
+                    'upgrade-insecure-requests': '1',
+                    'user-agent': self.ua.random
+                },
+                callback=self.parse
+            )
 
     def parse(self, response):
         item = NewsItem()
@@ -59,7 +84,7 @@ class NationalSpider(Spider):
             )
             item['text'] = clean_html(item['html'])
 
-        # self.log('Article data has been saved to article_data.txt')
+        self.log(OPENAI_MAX_TOKENS)
         return item
 
 

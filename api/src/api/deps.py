@@ -1,4 +1,7 @@
-﻿from typing import List, Dict
+﻿import logging
+
+from typing import List, Dict
+from urllib.parse import urlparse
 from fastapi import Request, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import jwt
@@ -76,3 +79,19 @@ def request_orders(
     params: Dict = Depends(query_params)
 ) -> List:
     return params.get('orders', [])
+
+def get_domain(
+    params: Dict = Depends(query_params)
+) -> str:
+    url = params.get('url')
+    domain = urlparse(url).netloc.lstrip('www.')
+    return domain
+
+async def get_source(
+    db: AsyncSession = Depends(get_db), *,
+    domain: str = Depends(get_domain)
+) -> Dict:
+    if not domain:
+        return None
+    source = await crud.source.get_by(db=db, domain=domain)
+    return source
