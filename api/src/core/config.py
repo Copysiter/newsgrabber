@@ -81,6 +81,7 @@ class Settings(BaseSettings):
         'admin', env='FIRST_SUPERUSER_PASSWORD'
     )
 
+    TELEGRAM_BOT_TOKEN: Union[str, None] = Field(None, env='TELEGRAM_BOT_TOKEN')
     TELEGRAPH_TOKEN: Union[str, None] = Field(None, env='TELEGRAPH_TOKEN')
     SPIDER_PROXY_URL: Union[str, None] = Field(None, env='SPIDER_PROXY_URL')
     TRANSLATE_PROXY_URL: Union[str, None] = Field(None, env='TRANSLATE_PROXY_URL')
@@ -89,6 +90,7 @@ class Settings(BaseSettings):
     OPENAI_MODEL: Union[str, None] = Field(None, env='OPENAI_MODEL')
     OPENAI_MAX_TOKENS: Union[int, None] = Field(None, env='OPENAI_MAX_TOKENS')
     OPENAI_TEMPERATURE: Union[float, None] = Field(None, env='OPENAI_TEMPERATURE')
+    OPENAI_CONTEXT: Union[str, None] = Field(None, env='OPENAI_CONTEXT')
     OPENAI_PROMPT: Union[str, None] = Field(None, env='OPENAI_PROMPT')
 
     class Config:

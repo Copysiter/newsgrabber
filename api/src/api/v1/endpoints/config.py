@@ -3,7 +3,7 @@ import os
 from dotenv import set_key
 from typing import Any, List
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Body
 
 from core.config import Settings, settings
 from api import deps
@@ -26,7 +26,7 @@ async def read_config(
 
 @router.put('/', response_model=settings)
 async def update_config(
-    key: str, value: str,
+    key: str = Body(), value: str = Body(),
     _: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
@@ -35,7 +35,7 @@ async def update_config(
     env_file = Settings.Config.env_file
     if not os.path.exists(env_file):
         raise HTTPException(status_code=400, detail="File .env not found")
-    set_key(env_file, key.upper(), value, quote_mode='never')
+    set_key(env_file, key.upper(), value.replace('\n', '\\n'), quote_mode='never')
 
     global settings
     settings = Settings()

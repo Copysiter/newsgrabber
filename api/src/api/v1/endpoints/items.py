@@ -9,6 +9,7 @@ from fastapi.encoders import jsonable_encoder
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api import deps
+from core.config import settings
 from services.translate import google_translate
 from services.publish import publish_to_telegraph
 from services.summarize import openai_summarize
@@ -50,7 +51,7 @@ async def translate_item(item_id: int):
         db.add(item)
         await db.commit()
 
-        TELEGRAM_BOT_TOKEN = '7867011321:AAFBqqhYRmb4ZE_H1hvIGiXPb_XTWYXOdFY'
+        TELEGRAM_BOT_TOKEN = settings.TELEGRAM_BOT_TOKEN
         TELEGRAM_API_URL = f'https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage'
 
         text = (f'<b>{item.title_ru}</b>\n\n'
@@ -90,7 +91,7 @@ async def summarize_item(item_id: int):
         db.add(item)
         await db.commit()
 
-        TELEGRAM_BOT_TOKEN = '7867011321:AAFBqqhYRmb4ZE_H1hvIGiXPb_XTWYXOdFY'
+        TELEGRAM_BOT_TOKEN = settings.TELEGRAM_BOT_TOKEN
         TELEGRAM_API_URL = f'https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage'
 
         text = (f'<b>{item.title_ru or item.title}</b>\n\n'

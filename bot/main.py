@@ -1,3 +1,4 @@
+import os
 import re
 import asyncio
 import aiohttp
@@ -10,11 +11,11 @@ from aiogram.enums.parse_mode import ParseMode
 from urllib.parse import urlparse
 
 
-# API_TOKEN = '5809025995:AAGurQ4i-Y8OdParI5xDjGaxCe3ghfOFAlQ'
-API_TOKEN = '7867011321:AAFBqqhYRmb4ZE_H1hvIGiXPb_XTWYXOdFY'
+API_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
+
+FASTAPI_URL = os.environ.get('API_URL')
 
 AUTHORIZED_PASSWORD = 'Start123'
-FASTAPI_URL = 'http://api:8000/api/v1'
 
 # Регулярное выражение для проверки домена
 DOMAIN_REGEX = re.compile(r'https?://(www\.)?([^/]+)')

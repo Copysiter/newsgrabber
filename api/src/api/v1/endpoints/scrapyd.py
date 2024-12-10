@@ -8,7 +8,8 @@ from fastapi import APIRouter, Depends, HTTPException, status  # noqa
 from sqlalchemy.ext.asyncio import AsyncSession
 from scrapyd_api import ScrapydAPI
 
-from api import deps  # noqa
+from api import deps
+from core.config import settings
 
 import schemas, crud
 
@@ -90,7 +91,7 @@ async def webhook(
     item = await crud.item.get(db=db, id=item_id)
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
-    TELEGRAM_BOT_TOKEN = '7867011321:AAFBqqhYRmb4ZE_H1hvIGiXPb_XTWYXOdFY'
+    TELEGRAM_BOT_TOKEN = settings.TELEGRAM_BOT_TOKEN
     TELEGRAM_API_URL = f'https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage'
     text = (f'<b>{item.title}</b>\n\n'
             f'<a href="{item.telegraph_url}">'
