@@ -5,9 +5,10 @@ services:
       context: ./bot
       dockerfile: Dockerfile
     container_name: news_bot
+    env_file:
+      ./.env
     environment:
-      - API_URL=http://api:8000
-      - BOT_TOKEN=5809025995:AAGurQ4i-Y8OdParI5xDjGaxCe3ghfOFAl
+      - API_URL=http://api:8000/api/v1
     depends_on:
       - api
     # networks:

@@ -13,9 +13,9 @@ from urllib.parse import urlparse
 
 API_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
 
-FASTAPI_URL = os.environ.get('API_URL')
+AUTHORIZED_PASSWORD = os.environ.get('TELEGRAM_BOT_PASSWORD')
 
-AUTHORIZED_PASSWORD = 'Start123'
+FASTAPI_URL = os.environ.get('API_URL')
 
 # Регулярное выражение для проверки домена
 DOMAIN_REGEX = re.compile(r'https?://(www\.)?([^/]+)')
