@@ -82,6 +82,7 @@ class Settings(BaseSettings):
     )
 
     TELEGRAM_BOT_TOKEN: Union[str, None] = Field(None, env='TELEGRAM_BOT_TOKEN')
+    TELEGRAM_BOT_PASSWORD: Union[str, None] = Field(None, env='TELEGRAM_BOT_PASSWORD')
     TELEGRAPH_TOKEN: Union[str, None] = Field(None, env='TELEGRAPH_TOKEN')
     SPIDER_PROXY_URL: Union[str, None] = Field(None, env='SPIDER_PROXY_URL')
     TRANSLATE_PROXY_URL: Union[str, None] = Field(None, env='TRANSLATE_PROXY_URL')
